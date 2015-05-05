@@ -246,14 +246,17 @@ module Bitgo
 				call :post, '/wallet/' + wallet_id + '/address/' + chain
 			end
 
-			def send_coins_to_address(wallet_id:, address:, amount:, wallet_passphrase:, min_confirmations: nil, fee: nil)
-				call :post, '/wallet/' + wallet_id + '/sendcoins', {
+			def send_coins_to_address(wallet_id:, address:, amount:, walletPassphrase:, minConfirms: nil, fee: nil)
+        #NOTE: pass thru `fee` and `min_confirmations` only if they're present
+				params = {
 					address: address,
 					amount: amount,
-					walletPassphrase: wallet_passphrase,
-					min_confirmations: min_confirmations,
-					fee: fee
-				}
+					walletPassphrase: walletPassphrase,
+          minConfirms: minConfirms,
+          fee: fee
+				}.delete_if { |_, v| v.nil? }
+        binding.pry
+				call :post, '/wallet/' + wallet_id + '/sendcoins', params
 			end
 
 			def send_coins_to_multiple_addresses()
