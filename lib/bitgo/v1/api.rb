@@ -246,11 +246,11 @@ module Bitgo
 				call :post, '/wallet/' + wallet_id + '/address/' + chain
 			end
 
-			def send_coins_to_address(wallet_id: wallet_id, address: address, amount: amount, wallet_passphrase: wallet_passphrase, min_confirmations: min_confirmations, fee: fee)
+			def send_coins_to_address(wallet_id:, address:, amount:, wallet_passphrase:, min_confirmations: nil, fee: nil)
 				call :post, '/wallet/' + wallet_id + '/sendcoins', {
 					address: address,
 					amount: amount,
-					wallet_passphrase: wallet_passphrase,
+					walletPassphrase: wallet_passphrase,
 					min_confirmations: min_confirmations,
 					fee: fee
 				}
@@ -334,7 +334,6 @@ module Bitgo
 				request = nil
 				if method == :get
 					request = Net::HTTP::Get.new(uri.request_uri)
-					
 				elsif method == :post
 					request = Net::HTTP::Post.new(uri.request_uri)
 				elsif method == :delete
@@ -351,8 +350,8 @@ module Bitgo
 				request.add_field('Content-Type', 'application/json')
 
 				# Add authentication header
-				if with_auth_token == true && @session_token.nil? == false
-					request.add_field('Authorization', 'Bearer ' + @session_token)
+				if with_auth_token == true && session_token.nil? == false
+					request.add_field('Authorization', 'Bearer ' + session_token)
 				end
 
 				response = http.request(request)
