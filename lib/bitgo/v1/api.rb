@@ -230,19 +230,19 @@ module Bitgo
 			# pendingApprovals	pending transaction approvals on the wallet
 			# confirmedBalance	the confirmed balance
 			# balance	the balance, including transactions with 0 confirmations
-			def get_wallet(wallet_id: wallet_id)
+			def get_wallet(wallet_id:)
 				call :get, '/wallet/' + wallet_id 
 			end
 
 			# Gets a list of addresses which have been instantiated for a wallet using the New Address API.
-			def list_wallet_addresses(wallet_id: wallet_id)
+			def list_wallet_addresses(wallet_id:)
 				call :get, '/wallet/' + wallet_id + '/addresses'
 			end
 
 			# Creates a new address for an existing wallet. BitGo wallets consist of two independent chains of addresses, designated 0 and 1.
 			# The 0-chain is typically used for receiving funds, while the 1-chain is used internally for creating change when spending from a wallet.
 			# It is considered best practice to generate a new receiving address for each new incoming transaction, in order to help maximize privacy.
-			def create_address(wallet_id: wallet_id, chain: chain)
+			def create_address(wallet_id:, chain:)
 				call :post, '/wallet/' + wallet_id + '/address/' + chain
 			end
 
@@ -255,7 +255,7 @@ module Bitgo
           minConfirms: minConfirms,
           fee: fee
 				}.delete_if { |_, v| v.nil? }
-        binding.pry
+
 				call :post, '/wallet/' + wallet_id + '/sendcoins', params
 			end
 
