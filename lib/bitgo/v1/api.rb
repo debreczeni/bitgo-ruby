@@ -483,18 +483,18 @@ module Bitgo
           http.use_ssl = true
         end
 
-        request = nil
-        if method == :get
+        request = case method
+        when :get
           uri.query = URI.encode_www_form(params) unless params.empty?
-          request = Net::HTTP::Get.new(uri.request_uri)
-        elsif method == :post
-          request = Net::HTTP::Post.new(uri.request_uri)
-        elsif method == :delete
-          request = Net::HTTP::Delete.new(uri.request_uri)
-        elsif method == :put
-          request = Net::HTTP::Put.new(uri.request_uri)
+          Net::HTTP::Get.new(uri.request_uri)
+        when :post
+          Net::HTTP::Post.new(uri.request_uri)
+        when :delete
+          Net::HTTP::Delete.new(uri.request_uri)
+        when :put
+          Net::HTTP::Put.new(uri.request_uri)
         else
-          raise 'Unsupported request method'
+          raise ApiError, "Unsupported request method #{method.inspect}"
         end
 
         request.body = params.to_json unless method == :get
@@ -504,22 +504,33 @@ module Bitgo
 
         # Add authentication header
         if with_auth_token == true && @session_token.nil? == false
-          # request.add_field('Authorization', 'Bearer ' + @session_token)
           request.add_field('Authorization', 'Bearer ' + @session_token)
         end
 
         response = http.request(request)
 
+
         if parse_response_as_json == true
           json_resp = nil
           begin
+
             json_resp = JSON.parse(response.body)
-          rescue => e
-            raise ApiError.new("Error Parsing Bitgo's response as JSON: #{e} , Bitgo response: #{response.body}")
+
+          rescue => ex
+
+            message = "Error Parsing Bitgo's response as JSON: #{ex.inspect}"
+
+            case response.code.to_s
+            when /^2\d\d/
+              raise ApiError.new("#{message} Bitgo response: #{response.code} #{response.message} #{response.body}", response)
+            else
+              raise ApiError.new("#{message} BiGo did not return a HTTP 2xx code: #{response.code} #{response.message} #{response.body}", response)
+            end
+
           end
 
           if json_resp.kind_of?(Hash) && json_resp["error"].nil? == false
-            raise ApiError.new(json_resp["error"])
+            raise ApiError.new(json_resp["error"], response)
           end
 
           return json_resp
